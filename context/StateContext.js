@@ -8,10 +8,7 @@ export const StateContext = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantities, setTotalQuantities] = useState(0);
-  const [qty, setQty] = useState(1);
-
   let foundProduct;
-  let index;
 
   const onAdd = (product, quantity) => {
     const checkProductInCart = cartItems.find(
@@ -33,6 +30,7 @@ export const StateContext = ({ children }) => {
       product.quantity = quantity;
 
       setCartItems([...cartItems, product]);
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
     }
 
     toast.success(`${quantity} ${product.name} added to your cart.`);
@@ -48,7 +46,6 @@ export const StateContext = ({ children }) => {
 
   const toggleCartItemQuantity = (id, value) => {
     foundProduct = cartItems.find((item) => item._id === id);
-    index = cartItems.indexOf(foundProduct);
 
     const num = value === 'inc' ? 1 : foundProduct.quantity > 1 ? -1 : 0;
 
@@ -62,36 +59,23 @@ export const StateContext = ({ children }) => {
     );
     setTotalPrice((prev) => prev + foundProduct.price * num);
     setTotalQuantities((prev) => prev + num);
-
-    // if (value === 'inc') {
-    //   setCartItems([
-    //     ...newCartItems,
-    //     { ...foundProduct, quantity: foundProduct.quantity + 1 },
-    //   ]);
-    //   setTotalPrice((prev) => prev + foundProduct.price);
-    //   setTotalQuantities((prev) => prev + 1);
-    // } else if (value === 'dec') {
-    //   if (foundProduct.quantity - 1 >= 1) {
-    //     setCartItems([
-    //       ...newCartItems,
-    //       { ...foundProduct, quantity: foundProduct.quantity - 1 },
-    //     ]);
-    //     setTotalPrice((prev) => prev - foundProduct.price);
-    //     setTotalQuantities((prev) => prev - 1);
-    //   }
-    // }
   };
 
-  const increaseQty = () => {
-    setQty((prev) => prev + 1);
-  };
+  useEffect(() => {
+    const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
+    if (savedCartItems?.cartItems.length >= 1) {
+      setCartItems(savedCartItems.cartItems);
+      setTotalPrice(savedCartItems.totalPrice);
+      setTotalQuantities(savedCartItems.totalQuantities);
+    }
+  }, []);
 
-  const decreaseQty = () => {
-    setQty((prev) => {
-      if (prev - 1 < 1) return 1;
-      return prev - 1;
-    });
-  };
+  useEffect(() => {
+    localStorage.setItem(
+      'cartItems',
+      JSON.stringify({ cartItems, totalPrice, totalQuantities })
+    );
+  }, [cartItems]);
 
   return (
     <Context.Provider
@@ -104,9 +88,6 @@ export const StateContext = ({ children }) => {
         setTotalPrice,
         totalQuantities,
         setTotalQuantities,
-        qty,
-        increaseQty,
-        decreaseQty,
         onAdd,
         onRemove,
         toggleCartItemQuantity,

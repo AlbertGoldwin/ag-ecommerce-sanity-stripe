@@ -13,8 +13,19 @@ import { client, urlFor } from '../../lib/client';
 const ProductDetails = ({ product, products }) => {
   const { image, name, details, price } = product;
   const [index, setIndex] = useState(0);
-  const { setShowCart, qty, increaseQty, decreaseQty, onAdd } =
-    useStateContext();
+  const [qty, setQty] = useState(1);
+  const { setShowCart, onAdd } = useStateContext();
+
+  const increaseQty = () => {
+    setQty((prev) => prev + 1);
+  };
+
+  const decreaseQty = () => {
+    setQty((prev) => {
+      if (prev - 1 < 1) return 1;
+      return prev - 1;
+    });
+  };
 
   const handleBuy = () => {
     onAdd(product, qty);
@@ -91,10 +102,7 @@ const ProductDetails = ({ product, products }) => {
       <div className="maylike-products-wrapper">
         <h2>You may also like</h2>
         <div className="marquee">
-          <div
-            className="maylike-products-container track"
-            onClick={() => setIndex(0)}
-          >
+          <div className="maylike-products-container track" onClick={() => {}}>
             {products.map((item) => (
               <Product key={item._id} product={item} />
             ))}
@@ -139,7 +147,7 @@ export const getStaticProps = async ({ params: { slug } }) => {
   ]);
 
   return {
-    props: { product, products },
+    props: { product, products, key: slug },
   };
 };
 
